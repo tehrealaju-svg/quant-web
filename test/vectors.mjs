@@ -1,0 +1,23 @@
+// Cross-checks the browser library against quant-core: same seed => same master key + address.
+import { readFileSync } from "node:fs";
+import * as Q from "../site/js/quant.js";
+await Q.loadCrypto(readFileSync(new URL("../site/qcrypto.wasm", import.meta.url)));
+const words = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art";
+let fail = 0;
+const check = (c, m) => { if (!c) { fail++; console.log("FAIL", m); } else console.log("ok  ", m); };
+check(await Q.validWords(words), "seed words checksum");
+check(!(await Q.validWords(words.replace("art", "zoo"))), "bad checksum rejected");
+const m = Q.masterKey(words);
+check(Q.hex(m) === "1c2b62b05825aa83aeae3664fd87b405830965c1248a7ee4ba63a4306f78bc1e", "master key matches core");
+const kp = Q.keypair(m, 0);
+const a = Q.encodeAddress("tqnt", Q.addressHash(kp.pk));
+check(a === "tqnt1qqdzfp4w3zyqlh0xvqnueatss9dmr5hxhd3hyqv70gv4702p64s35rgvsfe", "address 0 matches core: " + a);
+check(Q.hex(Q.decodeAddress("tqnt", a)) === Q.hex(Q.addressHash(kp.pk)), "address decodes");
+const msg = Q.blake3Tagged("x", new Uint8Array([1, 2, 3]));
+const sig = Q.sign(kp.sk, msg);
+check(Q.verify(kp.pk, sig, msg) && sig.length < 752, "falcon sign/verify (" + sig.length + " bytes)");
+check(Q.formatUnits(Q.parseUnits("1.5")) === "1.5" && Q.parseUnits("0.00000000001") === null, "amounts");
+check(Q.ammQuote(100n, 1000n, 1000n) === 90n, "amm quote");
+const g = await Q.generateWords();
+check(await Q.validWords(g), "generated words valid");
+process.exit(fail ? 1 : 0);
