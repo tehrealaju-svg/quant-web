@@ -378,7 +378,8 @@ async function loadMessages() {
   const mine = new Set(wallet.addrs.map((a) => a.str));
   const lists = await Promise.all(wallet.addrs.map((a) => api.call("getmessages", [a.str, 500]).catch(() => [])));
   const seen = new Map();
-  for (const l of lists) for (const m of l) if (!seen.has(m.txid)) seen.set(m.txid, { ...m, me: mine.has(m.from), other: mine.has(m.from) ? m.to : m.from });
+  // The node lists newest first; walk oldest first so same-block messages keep their order.
+  for (const l of lists) for (const m of [...l].reverse()) if (!seen.has(m.txid)) seen.set(m.txid, { ...m, me: mine.has(m.from), other: mine.has(m.from) ? m.to : m.from });
   const convos = new Map();
   for (const m of seen.values()) {
     if (!convos.has(m.other)) convos.set(m.other, []);
