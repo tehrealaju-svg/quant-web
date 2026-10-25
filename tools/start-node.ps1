@@ -13,10 +13,16 @@ Get-Content $envFile | Where-Object { $_ -match '^\s*([A-Z_]+)\s*=\s*(.*)$' } | 
 $quantd = $cfg["QUANTD"]; if (-not $quantd) { $quantd = "D:\Claude\Quant\quant-core\build\quantd.exe" }
 $network = $cfg["NETWORK"]; if (-not $network) { $network = "test" }
 $port = $cfg["PUBLIC_PORT"]; if (-not $port) { $port = "17340" }
+# Own data folder + P2P port so it never shares files with the Windows app running on the same PC.
+$datadir = $cfg["DATADIR"]; if (-not $datadir) { $datadir = Join-Path $env:APPDATA "Quant-site" }
+$p2pPort = $cfg["P2P_PORT"]; if (-not $p2pPort) { $p2pPort = "17347" }
 
 $netFlag = @{ test = "-testnet"; main = "-mainnet"; regtest = "-regtest" }[$network]
 Write-Host "Starting quantd ($network) with the public API on port $port..."
-$node = Start-Process -FilePath $quantd -ArgumentList @($netFlag, "-publicapi=$port") -PassThru -WindowStyle Minimized
+# Reuse a node that is already serving the public API (e.g. only the tunnel died).
+$running = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($running) { $node = Get-Process -Id $running.OwningProcess; Write-Host "quantd already running (pid $($node.Id))" }
+else { $node = Start-Process -FilePath $quantd -ArgumentList @($netFlag, "-publicapi=$port", "-datadir=$datadir", "-port=$p2pPort", "-addnode=127.0.0.1:17337") -PassThru -WindowStyle Minimized }
 
 $log = Join-Path $env:TEMP "quant-tunnel.log"
 Remove-Item $log -ErrorAction SilentlyContinue
