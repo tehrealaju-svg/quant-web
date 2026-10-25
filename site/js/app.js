@@ -71,7 +71,8 @@ async function findNode() {
   for (const url of candidates) {
     try {
       const a = new Q.NodeApi(url);
-      await a.call("getblockcount");
+      // Skip nodes on another network (e.g. a leftover regtest node saved in settings).
+      if ((await a.call("getblockchaininfo")).network !== NETWORK) continue;
       return a;
     } catch {}
   }
@@ -173,7 +174,7 @@ async function walletView() {
   <div class="page-head"><div><span class="muted">Your balance</span>
     <div class="balance-big">${Q.formatUnits(q.units)} <small>QNT</small></div>
     ${q.pending ? `<div class="muted">+ ${Q.formatUnits(q.pending)} QNT arriving</div>` : ""}
-    ${q.immature ? `<div class="muted">${Q.formatUnits(q.immature)} QNT mined, spendable after 100 blocks</div>` : ""}
+    ${q.immature ? `<div class="muted">${Q.formatUnits(q.immature)} QNT mined, spendable after ${NETWORK === "main" ? 100 : 10} blocks</div>` : ""}
   </div>
   <div class="row"><button class="btn" id="b-send">Send</button><button class="btn ghost" id="b-recv">Receive</button></div></div>
   ${nodeOk ? "" : `<div class="notice warn" style="margin-bottom:16px">Offline: balances can't be loaded right now.</div>`}

@@ -19,10 +19,11 @@ $p2pPort = $cfg["P2P_PORT"]; if (-not $p2pPort) { $p2pPort = "17347" }
 
 $netFlag = @{ test = "-testnet"; main = "-mainnet"; regtest = "-regtest" }[$network]
 Write-Host "Starting quantd ($network) with the public API on port $port..."
+# -mine=2: mining refills the faucet wallet (testnet).
 # Reuse a node that is already serving the public API (e.g. only the tunnel died).
 $running = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($running) { $node = Get-Process -Id $running.OwningProcess; Write-Host "quantd already running (pid $($node.Id))" }
-else { $node = Start-Process -FilePath $quantd -ArgumentList @($netFlag, "-publicapi=$port", "-datadir=$datadir", "-port=$p2pPort", "-addnode=127.0.0.1:17337") -PassThru -WindowStyle Minimized }
+else { $node = Start-Process -FilePath $quantd -ArgumentList @($netFlag, "-publicapi=$port", "-datadir=$datadir", "-port=$p2pPort", "-addnode=127.0.0.1:17337", "-mine=2") -PassThru -WindowStyle Minimized }
 
 $log = Join-Path $env:TEMP "quant-tunnel.log"
 Remove-Item $log -ErrorAction SilentlyContinue
