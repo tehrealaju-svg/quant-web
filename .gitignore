@@ -1,2 +1,3 @@
 tools/node.env
 .claude/
+supabase/setup-paste-me.sql
