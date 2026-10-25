@@ -1,0 +1,38 @@
+/* Trading terminal (shared by the website and the app). */
+.term {
+  --gap: 6px;
+  display: grid; height: 100%; min-height: 560px; gap: 0;
+  grid-template-columns: 1fr var(--gap) var(--col-trades) var(--gap) var(--col-right);
+  grid-template-rows: var(--row-top) var(--gap) 1fr;
+  grid-template-areas: "explore explore explore s3 side" "s1 s1 s1 s3 side" "chart s2 trades s3 side";
+}
+.term .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.t-explore { grid-area: explore; } .t-chart { grid-area: chart; } .t-trades { grid-area: trades; } .t-side { grid-area: side; overflow-y: auto !important; }
+.t-split.h { grid-area: s1; cursor: row-resize; } .t-split.v { grid-area: s2; cursor: col-resize; } .t-split.v2 { grid-area: s3; cursor: col-resize; }
+.t-split { position: relative; touch-action: none; }
+.t-split::after { content: ""; position: absolute; inset: 0; margin: auto; border-radius: 2px; background: var(--line); opacity: 0; transition: opacity .15s; }
+.t-split.h::after { width: 40px; height: 3px; } .t-split.v::after, .t-split.v2::after { width: 3px; height: 40px; }
+.t-split:hover::after { opacity: 1; background: var(--brand); }
+.t-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.t-head .seg button { padding: 5px 11px; font-size: 13px; }
+.t-search { width: 200px !important; min-height: 34px !important; padding: 6px 12px !important; margin-left: auto; }
+.t-table, .t-list { overflow: auto; flex: 1; }
+.t-table table.t td, .t-table table.t th { padding: 8px 10px; }
+.t-table thead th, .t-list thead th { position: sticky; top: 0; background: var(--card); z-index: 1; }
+.t-table tr.sel td { background: color-mix(in srgb, var(--brand) 9%, transparent); }
+table.t.compact td, table.t.compact th { padding: 5px 10px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.t-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 15px; }
+.t-price { font-size: 17px; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.t-stat { font-size: 12px; }
+.t-canvas { flex: 1; width: 100%; min-height: 0; display: block; cursor: crosshair; }
+.token-icon.sm { width: 28px; height: 28px; font-size: 10px; }
+.token-icon.q { background: linear-gradient(135deg, #1a5cff, #ff8a1f); }
+.spark { width: 60px; height: 20px; display: block; }
+.ath { display: inline-block; width: 36px; height: 4px; background: var(--surface); border-radius: 2px; margin-right: 6px; vertical-align: middle; overflow: hidden; }
+.ath i { display: block; height: 100%; background: var(--up); }
+.big-total { font-size: 26px; font-weight: 800; }
+@media (max-width: 900px) {
+  .term { display: flex; flex-direction: column; height: auto; gap: 10px; }
+  .t-split { display: none; }
+  .t-explore { max-height: 60vh; } .t-chart { height: 380px; flex: none; } .t-trades { max-height: 300px; } .t-side { order: -1; }
+}

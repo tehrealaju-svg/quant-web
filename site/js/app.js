@@ -99,6 +99,7 @@ const routes = {
   "": home, wallet: walletView, trade, token: tokenView, create, download, settings,
 };
 async function route() {
+  document.body.classList.remove("wide");
   const [name, arg] = location.hash.replace(/^#\/?/, "").split("/");
   $$("[data-nav]").forEach((a) => a.classList.toggle("on", a.dataset.nav === (name || "home")));
   const fn = routes[name] || home;
@@ -367,20 +368,44 @@ async function requireWallet() {
 // ---------------------------------------------------------------- trade list
 async function trade() {
   needNode();
-  const sort = ls.get("quant.sort") || "liquidity";
-  const r = await api.call("listtokens", [0, 200, sort]);
-  view.innerHTML = `
-  <div class="page-head"><div><h1>Coins</h1><span class="muted">${r.total} coins on Quant</span></div>
-    <div class="row wrap"><div class="seg" id="sort"><button data-s="liquidity">Top</button><button data-s="new">New</button></div>
-    <a class="btn" href="#/create">Create a coin</a></div></div>
-  <div class="card"><input class="in" id="q" placeholder="Search name or ticker" style="margin-bottom:12px"><div id="tbl">${tokenTable(r.tokens)}</div></div>`;
-  $$("#sort button").forEach((b) => { b.classList.toggle("on", b.dataset.s === sort); b.onclick = () => { ls.set("quant.sort", b.dataset.s); route(); }; });
-  $("#q").oninput = (e) => {
-    const s = e.target.value.trim().toLowerCase();
-    $("#tbl").innerHTML = tokenTable(r.tokens.filter((t) => !s || t.ticker.toLowerCase().includes(s) || t.name.toLowerCase().includes(s)));
-    bindTableClicks();
-  };
-  bindTableClicks();
+  document.body.classList.add("wide");
+  view.innerHTML = `<div class="term-host"></div>`;
+  const unlocked = () => wallet || (hasWallet() && (wallet = Wallet.fromSession(HRP)));
+  QTerminal.mount($(".term-host"), {
+    markets: (sort) => api.call("listmarkets", [sort, 300]),
+    history: (id) => api.call("getpoolhistory", [id, 2000]),
+    trades: (id) => api.call("getpooltrades", [id, 200]),
+    async portfolio() {
+      if (!unlocked()) return { qnt: 0, tokens: [], locked: `<a href="#/wallet">Unlock or create your wallet</a> to trade.` };
+      await wallet.refresh(api);
+      const tokens = [];
+      for (const [k, v] of wallet.balances()) {
+        if (!k) continue;
+        const t = await getToken(k);
+        if (t) tokens.push({ id: k, ticker: t.ticker, uri: t.uri, amount: Number(v.units) / 10 ** t.decimals });
+      }
+      return { qnt: Number((wallet.balances().get("") || { units: 0n }).units) / 1e10, tokens };
+    },
+    quote: (id, side, amt) => api.call("quote", [id, side, amt]),
+    async swap(id, side, amt, slip) {
+      if (!unlocked()) { location.hash = "#/wallet"; throw new Error("Unlock your wallet first"); }
+      const t = await getToken(id), dec = t.decimals, TU = Q.unhex(id), sell = side === "sell";
+      const v = Q.parseUnits(amt, sell ? dec : 10);
+      if (!v) throw new Error("Enter an amount");
+      await wallet.refresh(api);
+      const p = await api.call("getpool", [id]);
+      const rq = Q.parseUnits(p.qnt_reserve), rt = Q.parseUnits(p.token_reserve, dec);
+      const out = sell ? Q.ammQuote(v, rt, rq) : Q.ammQuote(v, rq, rt);
+      const minOut = (out * BigInt(Math.round((100 - slip) * 100))) / 10000n;
+      if (minOut <= 0n) throw new Error("Amount too small");
+      const b = wallet.build({ outs: [], ops: [{ type: "swap", token: TU, sell, in: v, out: minOut }],
+        opIn: new Map([[sell ? id : QK, v]]), opOut: new Map([[sell ? QK : id, minOut]]) });
+      const txid = await api.call("sendrawtransaction", [b.hex]);
+      record({ txid, label: (sell ? "Sold " : "Bought ") + t.ticker });
+      return { out: sell ? Q.formatUnits(minOut) + " QNT" : Q.formatUnits(minOut, dec) + " " + t.ticker };
+    },
+    prefGet: (k) => ls.get(k), prefSet: (k, v) => ls.set(k, String(v)), toast,
+  }, { createHref: "#/create", refreshMs: 20000 });
 }
 
 // ---------------------------------------------------------------- token page

@@ -182,3 +182,6 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
 .foot a { color: var(--faint); }
 .list .r { min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 480px) { .balance-big { font-size: 32px; } .card { padding: 16px; } }
+body.wide main { max-width: none; padding: 12px; }
+body.wide .term-host { height: calc(100vh - 80px); min-height: 620px; }
+@media (max-width: 900px) { body.wide .term-host { height: auto; } }
