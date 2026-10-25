@@ -4,8 +4,8 @@
 export const NETWORK = (() => { try { return localStorage.getItem("quant.net") || "test"; } catch { return "test"; } })();
 
 export const SUPABASE = {
-  url: "",      // e.g. https://tizxmikbkrubyeuktxxg.supabase.co  (filled in by setup)
-  anonKey: "",  // publishable key (read-only by row-level security)
+  url: "https://tizxmikbkrubyeuktxxg.supabase.co",
+  anonKey: "sb_publishable_wG56RyVyAoQjkunoR7X2Gg_3zxkg20f", // publishable (read-only by row-level security)
 };
 
 // Used when nothing else is configured: a node on this computer running
