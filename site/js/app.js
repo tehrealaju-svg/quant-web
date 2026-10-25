@@ -49,7 +49,7 @@ function tokenIcon(t) {
   let h = 0; for (const c of t?.id || t2) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return `<span class="token-icon" style="background:hsl(${h % 360} 70% 45%)">${esc(t2)}</span>`;
 }
-const qntIcon = `<span class="token-icon">Q</span>`;
+const qntIcon = `<span class="token-icon" style="background:none"><img src="img/icon.svg" alt=""></span>`;
 const needNode = () => { if (!api || !nodeOk) throw new Error("Not connected to the Quant network yet"); };
 
 // ---------------------------------------------------------------- node connection
