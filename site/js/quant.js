@@ -187,6 +187,7 @@ function writeOp(w, op) {
     case "add": w.u8(3); w.raw(op.token); w.varint(op.qnt); w.varint(op.tok); w.varint(op.shares); break;
     case "remove": w.u8(4); w.raw(op.token); w.varint(op.shares); w.varint(op.qnt); w.varint(op.tok); break;
     case "swap": w.u8(5); w.raw(op.token); w.u8(op.sell ? 1 : 0); w.varint(op.in); w.varint(op.out); break;
+    case "message": w.u8(6); w.raw(op.from); w.raw(op.to); w.u8(op.gift || 0); w.str(op.text || ""); break;
     default: throw new Error("unknown op " + op.type);
   }
 }

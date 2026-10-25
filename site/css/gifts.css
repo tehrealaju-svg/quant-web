@@ -1,0 +1,99 @@
+/* Animated gifts (js/gifts.js) + the messages page. */
+.gift { width: 56px; height: 56px; display: inline-block; flex: none; }
+.gift.big { width: 120px; height: 120px; }
+.gift svg { width: 100%; height: 100%; overflow: visible; }
+.gift * { transform-box: fill-box; }
+
+/* rose: sways, bloom breathes, petals drift down */
+.g-rose .g-sway { transform-origin: 50% 100%; animation: g-sway 3s ease-in-out infinite; }
+.g-rose .g-bloom { transform-origin: 50% 70%; animation: g-breathe 2.4s ease-in-out infinite; }
+.g-rose .g-leaf { transform-origin: 100% 50%; animation: g-flap 2.6s ease-in-out infinite; }
+.g-rose .g-leaf.r { transform-origin: 0 50%; animation-delay: -1.3s; }
+.g-rose .g-petals ellipse { animation: g-fall 3.6s linear infinite; opacity: 0; }
+.g-rose .g-petals ellipse:nth-child(2) { animation-delay: -1.2s; }
+.g-rose .g-petals ellipse:nth-child(3) { animation-delay: -2.4s; }
+
+/* pizza: bobs, steam rises, cheese drips */
+.g-pizza .g-bob { transform-origin: 50% 60%; animation: g-bob 2.2s ease-in-out infinite; }
+.g-pizza .g-steam path { stroke: var(--muted, #999); stroke-width: 2.5; fill: none; stroke-linecap: round; opacity: 0; animation: g-steam 2.4s ease-out infinite; }
+.g-pizza .g-steam path:nth-child(2) { animation-delay: -.8s; }
+.g-pizza .g-steam path:nth-child(3) { animation-delay: -1.6s; }
+.g-pizza .g-drip { transform-origin: 50% 0; animation: g-drip 2.2s ease-in-out infinite; }
+
+/* diamond: floats + tilts, a shine sweeps across, sparkles twinkle */
+.g-diamond .g-float { transform-origin: 50% 50%; animation: g-float 3s ease-in-out infinite; }
+.g-diamond .g-shine { animation: g-shine 2.6s ease-in-out infinite; }
+.g-diamond .g-sparkle path { transform-origin: 50% 50%; animation: g-twinkle 1.8s ease-in-out infinite; }
+.g-diamond .g-sparkle path:nth-child(2) { animation-delay: -.6s; }
+.g-diamond .g-sparkle path:nth-child(3) { animation-delay: -1.2s; }
+
+/* rocket: shakes on lift-off, flame flickers, stars stream past */
+.g-rocket .g-lift { transform-origin: 50% 50%; animation: g-lift 1.6s ease-in-out infinite; }
+.g-rocket .g-flame { transform-origin: 50% 0; animation: g-flicker .18s ease-in-out infinite alternate; }
+.g-rocket .g-stars circle { animation: g-stream 1.4s linear infinite; }
+.g-rocket .g-stars circle:nth-child(2n) { animation-duration: 1s; animation-delay: -.5s; }
+.g-rocket .g-stars circle:nth-child(3n) { animation-delay: -.9s; }
+
+@keyframes g-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes g-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes g-flap { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-10deg); } }
+@keyframes g-fall { 0% { transform: translate(0, -6px) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(-10px, 70px) rotate(200deg); opacity: 0; } }
+@keyframes g-bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-5px) rotate(3deg); } }
+@keyframes g-steam { 0% { transform: translateY(8px); opacity: 0; } 30% { opacity: .7; } 100% { transform: translateY(-8px); opacity: 0; } }
+@keyframes g-drip { 0%, 100% { transform: scaleY(.6); } 50% { transform: scaleY(1.25); } }
+@keyframes g-float { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+@keyframes g-shine { 0%, 30% { transform: skewX(-20deg) translateX(0); } 70%, 100% { transform: skewX(-20deg) translateX(150px); } }
+@keyframes g-twinkle { 0%, 100% { transform: scale(.3) rotate(0); opacity: .2; } 50% { transform: scale(1.1) rotate(45deg); opacity: 1; } }
+@keyframes g-lift { 0%, 100% { transform: translate(0, 2px) rotate(-1.5deg); } 25% { transform: translate(1px, -2px) rotate(1deg); } 50% { transform: translate(-1px, -4px) rotate(1.5deg); } 75% { transform: translate(1px, -1px) rotate(-1deg); } }
+@keyframes g-flicker { from { transform: scaleY(.75) scaleX(.9); } to { transform: scaleY(1.2) scaleX(1.05); } }
+@keyframes g-stream { from { transform: translateY(-20px); opacity: 0; } 20% { opacity: 1; } to { transform: translateY(90px); opacity: 0; } }
+.g-rocket .g-stars circle { fill: var(--muted, #aaa); }
+
+@media (prefers-reduced-motion: reduce) { .gift *, .gift-burst * { animation: none !important; } }
+
+/* full-screen burst when a gift is sent / opened */
+.gift-burst { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; pointer-events: auto; background: color-mix(in srgb, var(--bg) 40%, transparent); animation: gb-bg 2.6s ease forwards; }
+.gift-burst-in { display: grid; justify-items: center; gap: 10px; animation: gb-pop 2.6s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.gift-burst .gift.big { width: 180px; height: 180px; }
+.gift-burst-label { font-weight: 700; font-size: 18px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; box-shadow: var(--shadow); }
+.gift-burst i { position: absolute; left: 50%; top: 50%; width: 9px; height: 14px; border-radius: 2px; opacity: 0; animation: gb-bit 1.4s ease-out forwards; }
+@keyframes gb-bg { 0% { opacity: 0; } 10%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes gb-pop { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 18% { transform: scale(1.1) rotate(4deg); opacity: 1; } 28%, 80% { transform: scale(1) rotate(0); opacity: 1; } 100% { transform: scale(.9) translateY(-20px); opacity: 0; } }
+@keyframes gb-bit { 0% { transform: translate(-50%, -50%) rotate(0); opacity: 1; } 100% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y) + 60px)) rotate(var(--r)); opacity: 0; } }
+
+/* ---------------------------------------------------------------- messages page */
+.chat { display: grid; grid-template-columns: 300px 1fr; gap: 16px; min-height: 70vh; }
+.chat-list { display: flex; flex-direction: column; gap: 4px; overflow: auto; max-height: 75vh; }
+.chat-item { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; text-decoration: none; color: inherit; }
+.chat-item:hover { background: var(--surface); }
+.chat-item.on { background: var(--brand-soft); }
+.chat-item .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; }
+.chat-item .meta { min-width: 0; flex: 1; }
+.chat-item .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-item .last { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thread { display: flex; flex-direction: column; min-height: 0; }
+.thread-head { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.bubbles { flex: 1; overflow: auto; padding: 16px 4px; display: flex; flex-direction: column; gap: 10px; max-height: 58vh; min-height: 260px; }
+.bubble { max-width: min(78%, 460px); padding: 10px 14px; border-radius: 18px; background: var(--surface); align-self: flex-start; word-wrap: break-word; white-space: pre-wrap; animation: bub-in .25s ease; }
+.bubble.me { align-self: flex-end; background: var(--brand); color: var(--brand-ink); }
+.bubble.giftb { display: grid; justify-items: center; gap: 4px; background: linear-gradient(160deg, var(--brand-soft), var(--surface)); color: var(--text); border: 1px solid var(--line); cursor: pointer; }
+.bubble.giftb.me { background: linear-gradient(160deg, var(--brand), var(--brand-soft)); }
+.bubble .gname { font-weight: 700; font-size: 13px; }
+.bubble .when { font-size: 11px; opacity: .65; margin-top: 4px; display: block; }
+.bubble .when.pend::after { content: " · sending"; }
+@keyframes bub-in { from { transform: translateY(6px) scale(.98); opacity: 0; } }
+.composer { display: flex; gap: 8px; align-items: flex-end; padding-top: 12px; border-top: 1px solid var(--line); }
+.composer textarea { flex: 1; resize: none; min-height: 44px; max-height: 140px; }
+.gift-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+.gift-opt { display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; background: var(--card); color: inherit; font: inherit; }
+.gift-opt:hover { border-color: var(--brand); }
+.gift-opt.on { border-color: var(--brand); background: var(--brand-soft); }
+.gift-opt .p { font-size: 12px; color: var(--muted); }
+.gift-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 2px 10px 2px 2px; border-radius: 999px; background: var(--brand-soft); }
+.gift-chip .gift { width: 28px; height: 28px; }
+@media (max-width: 760px) {
+  .chat { grid-template-columns: 1fr; }
+  .chat.open .chat-list { display: none; }
+  .chat:not(.open) .thread { display: none; }
+  .bubbles { max-height: 60vh; }
+}
