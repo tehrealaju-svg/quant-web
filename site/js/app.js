@@ -313,7 +313,7 @@ function receiveModal() {
   $("#cp", m).onclick = async () => { try { await navigator.clipboard.writeText(a); toast("Copied"); } catch { toast("Copy failed"); } };
   $("#pres", m).onclick = async (e) => {
     try { const r = await api.call("faucet", [a]); e.currentTarget?.remove(); giftBurst(3); toast(`You got ${r.amount} test QNT 🎁`, 5000); }
-    catch (err) { toast(/already/.test(err.message) ? "Come back tomorrow for another present" : err.message, 5000); }
+    catch (err) { toast(/already/.test(err.message) ? "Come back tomorrow for another present" : /insufficient/i.test(err.message) ? "The faucet is refilling — try again later" : err.message, 5000); }
   };
 }
 
@@ -488,7 +488,7 @@ async function faucet() {
     <button class="btn block" id="fg">Get test QNT</button><div id="fo"></div></div>`;
   $("#fg").onclick = async (e) => {
     try { busy(e.target, true); const r = await api.call("faucet", [$("#fa").value.trim()]); $("#fo").innerHTML = `<div class="notice">Sent ${esc(r.amount)} QNT ✓</div>`; }
-    catch (err) { toast(err.message, 5000); } finally { busy(e.target, false); }
+    catch (err) { toast(/insufficient/i.test(err.message) ? "The faucet is refilling — try again later" : err.message, 5000); } finally { busy(e.target, false); }
   };
 }
 
