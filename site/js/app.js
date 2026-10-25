@@ -307,10 +307,14 @@ async function revealWordsModal() {
 
 function receiveModal() {
   const a = wallet.receive.str;
-  const m = modal(`<h2>Receive QNT or coins</h2><div style="text-align:center"><div class="qr" id="qr"></div></div>
+  const m = modal(`<h2>Receive QNT or coins</h2><div class="qr-wrap"><button class="present" id="pres" title="Free test QNT"><svg viewBox="0 0 64 64"><rect x="8" y="26" width="48" height="32" rx="3" fill="#ff5a4e"/><rect x="4" y="18" width="56" height="12" rx="3" fill="#ff7b6e"/><rect x="28" y="18" width="8" height="40" fill="#ffd43b"/><path d="M32 18c-6-12-20-10-14-2 3 3 14 2 14 2zM32 18c6-12 20-10 14-2-3 3-14 2-14 2z" fill="#ffd43b"/></svg></button><div class="qr" id="qr"></div></div>
     <p class="mono" style="margin:14px 0">${a}</p><button class="btn block" id="cp">Copy address</button>`);
   if (window.qrcode) { const qr = window.qrcode(0, "M"); qr.addData(a); qr.make(); $("#qr", m).innerHTML = qr.createSvgTag({ cellSize: 5, margin: 0 }); }
   $("#cp", m).onclick = async () => { try { await navigator.clipboard.writeText(a); toast("Copied"); } catch { toast("Copy failed"); } };
+  $("#pres", m).onclick = async (e) => {
+    try { const r = await api.call("faucet", [a]); e.currentTarget?.remove(); giftBurst(3); toast(`You got ${r.amount} test QNT 🎁`, 5000); }
+    catch (err) { toast(/already/.test(err.message) ? "Come back tomorrow for another present" : err.message, 5000); }
+  };
 }
 
 function sendModal(presetAsset = "") {
