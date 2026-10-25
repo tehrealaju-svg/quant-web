@@ -97,7 +97,7 @@ async function getToken(id) {
 
 // ---------------------------------------------------------------- router
 const routes = {
-  "": home, wallet: walletView, trade, messages: messagesView, token: tokenView, create, download, settings,
+  "": home, wallet: walletView, trade, messages: messagesView, faucet, token: tokenView, create, download, settings,
 };
 async function route() {
   document.body.classList.remove("wide");
@@ -473,6 +473,19 @@ async function messagesView(peer) {
     if (peer && !convos.some(([a]) => a === peer)) convos.unshift([peer, []]);
     paint();
   }, 12000);
+}
+
+// ---------------------------------------------------------------- testnet faucet
+async function faucet() {
+  needNode();
+  view.innerHTML = `<div class="card stack" style="max-width:520px;margin:auto"><h1>Testnet faucet</h1>
+    <p class="muted" style="margin:0">Free test QNT (1-10) once a day per address. Testnet coins have no value.</p>
+    <input class="in mono" id="fa" placeholder="${HRP}1…" spellcheck="false" value="${esc(wallet?.receive?.str || "")}">
+    <button class="btn block" id="fg">Get test QNT</button><div id="fo"></div></div>`;
+  $("#fg").onclick = async (e) => {
+    try { busy(e.target, true); const r = await api.call("faucet", [$("#fa").value.trim()]); $("#fo").innerHTML = `<div class="notice">Sent ${esc(r.amount)} QNT ✓</div>`; }
+    catch (err) { toast(err.message, 5000); } finally { busy(e.target, false); }
+  };
 }
 
 // ---------------------------------------------------------------- trade list
